@@ -6,7 +6,7 @@ int main(int argc, char** argv)
 {
 	if (argc < 4)
 	{
-		std::cout << "Too few arguements.\n";
+		std::cout << "Too few arguments.\n";
 		std::cout << "Usage: XorCrypt <Key> <FileIn> <FileOut>\n";
 		std::cout << "Note: <Key> is an unsigned char." << std::flush;
 
