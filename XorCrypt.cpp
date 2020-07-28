@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
 
 int main(int argc, char** argv)
 {
@@ -12,10 +13,11 @@ int main(int argc, char** argv)
 
 		return 0;
 	}
+	unsigned long ulKey{};
 	unsigned char Key{};
 	try
 	{
-		Key = (unsigned char)std::stoul(argv[1]);
+		ulKey = std::stoul(argv[1]);
 	}
 	catch (const std::exception&)
 	{
@@ -23,22 +25,30 @@ int main(int argc, char** argv)
 		
 		return 0;
 	}
-
-	std::string FileIn = argv[2];
-	std::string FileOut = argv[3];
-	std::ifstream ifsIn;
-	std::ofstream ofsOut;
-	ifsIn.open(FileIn.c_str(), std::ios::in | std::ios::binary);
-	if (!ifsIn)
+	if (ulKey > std::numeric_limits<unsigned char>::max())
 	{
-		std::cout << "Failed to open " << FileIn << std::endl;
+		std::cout << "Invalid key." << std::endl;
 
 		return 0;
 	}
-	ofsOut.open(FileOut.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+	else
+	{
+		Key = (unsigned char)ulKey;
+	}
+
+	std::ifstream ifsIn;
+	std::ofstream ofsOut;
+	ifsIn.open(argv[2], std::ios::in | std::ios::binary);
+	if (!ifsIn)
+	{
+		std::cout << "Failed to open " << argv[2] << std::endl;
+
+		return 0;
+	}
+	ofsOut.open(argv[3], std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!ofsOut)
 	{
-		std::cout << "Failed to open " << FileOut << std::endl;
+		std::cout << "Failed to open " << argv[3] << std::endl;
 
 		return 0;
 	}
@@ -54,5 +64,5 @@ int main(int argc, char** argv)
 	}
 	ifsIn.close();
 	ofsOut.close();
-	std::cout << FileIn << " is xored with key " << (unsigned int)Key << " and saved as " << FileOut << std::endl;
+	std::cout << argv[2] << " is xored with key " << (unsigned int)Key << " and saved as " << argv[3] << std::endl;
 }
