@@ -1,18 +1,41 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <limits>
 
 int main(int argc, char** argv)
 {
-	if (argc < 4)
+	switch (argc)
 	{
-		std::cout << "Too few arguments.\n";
-		std::cout << "Usage: XorCrypt <Key> <FileIn> <FileOut>\n";
-		std::cout << "Note: <Key> is an unsigned char." << std::flush;
+	case 2:
+		{
+			if (!std::strcmp(argv[1], "/?"))
+			{
+				std::cout << "Usage: XorCrypt Key FileIn FileOut\n";
+				std::cout << "Note: Key is an unsigned char." << std::flush;
 
-		return 0;
+				return 0;
+			}
+			else
+			{
+				std::cerr << "Too few arguments." << std::endl;
+
+				return 1;
+			}
+		}
+	default:
+		{
+			if (argc < 4)
+			{
+				std::cerr << "Too few arguments." << std::endl;
+
+				return 1;
+			}
+		}
+		break;
 	}
+
 	unsigned long ulKey{};
 	unsigned char Key{};
 	try
@@ -21,48 +44,51 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception&)
 	{
-		std::cout << "Invalid key." << std::endl;
+		std::cerr << "Invalid key." << std::endl;
 		
-		return 0;
+		return 1;
 	}
 	if (ulKey > std::numeric_limits<unsigned char>::max())
 	{
-		std::cout << "Invalid key." << std::endl;
+		std::cerr << "Invalid key." << std::endl;
 
-		return 0;
+		return 1;
 	}
 	else
 	{
-		Key = (unsigned char)ulKey;
+		Key = static_cast<unsigned char>(ulKey);
 	}
 
-	std::ifstream ifsIn;
-	std::ofstream ofsOut;
-	ifsIn.open(argv[2], std::ios::in | std::ios::binary);
-	if (!ifsIn)
+	std::ifstream ifs;
+	std::ofstream ofs;
+	ifs.open(argv[2], std::ios::in | std::ios::binary);
+	if (!ifs)
 	{
-		std::cout << "Failed to open " << argv[2] << std::endl;
+		std::cerr << "Failed to open " << argv[2] << std::endl;
 
-		return 0;
+		return 1;
 	}
-	ofsOut.open(argv[3], std::ios::out | std::ios::binary | std::ios::trunc);
-	if (!ofsOut)
+	ofs.open(argv[3], std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!ofs)
 	{
-		std::cout << "Failed to open " << argv[3] << std::endl;
+		std::cerr << "Failed to open " << argv[3] << std::endl;
 
-		return 0;
+		return 1;
 	}
 	unsigned char byte{};
-	while (!ifsIn.eof())
+	while (!ifs.eof())
 	{
-		ifsIn.read((char*)&byte, 1);
-		if (!ifsIn.eof())
+		ifs.read(reinterpret_cast<char*>(&byte), 1);
+		if (!ifs.eof())
 		{
 			byte = byte ^ Key;
-			ofsOut.write((char*)&byte, 1);
+			ofs.write(reinterpret_cast<char*>(&byte), 1);
 		}
 	}
-	ifsIn.close();
-	ofsOut.close();
-	std::cout << argv[2] << " is xored with key " << (unsigned int)Key << " and saved as " << argv[3] << std::endl;
+	ifs.close();
+	ofs.close();
+
+	std::cout << argv[2] << " is xor-ed with key " << static_cast<unsigned int>(Key) << " and saved as " << argv[3] << std::endl;
+
+	return 0;
 }

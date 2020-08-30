@@ -1,42 +1,39 @@
 Option Explicit
 
 Const adTypeBinary = 1, adSaveCreateOverWrite = 2
-Dim fso, adostream, xmldom, node
+Dim adostream, xmldom, node
 Dim Key, FileIn, FileOut, Buffer
 Dim ByteTable(256)
 
-On Error Resume Next
-Set fso = CreateObject("Scripting.FileSystemObject")
-If err.number <> 0 Then
-	WScript.Echo("Failed to create Scripting.FileSystemObject object. " & err.Description & ".")
-	WScript.Quit
-End If
-
-If WScript.Arguments.Count < 3 Then
-	WScript.Echo("Too few arguments.")
-	WScript.Echo("Usage: XorCrypt.vbs <Key> <FileIn> <FileOut>")
-	WScript.Echo("Note: <Key> is a byte.")
-	WScript.Quit
-Else
-	Key = CByte(WScript.Arguments(0))
-	If err.number <> 0 Then
-		WScript.Echo("Invalid key.")
-		WScript.Quit
-	End If
-	FileIn = WScript.Arguments(1)
-	FileOut = WScript.Arguments(2)
-End If
-
-Set xmldom = CreateObject("Msxml2.DOMDocument")
-If err.number <>0 Then
-	WScript.Echo("Failed to create Msxml2.DOMDocument object. " & err.Description & ".")
-	WScript.Quit
-End If
 Set adostream = CreateObject("ADODB.Stream")
-If err.number <>0 Then
-	WScript.Echo("Failed to create ADODB.Stream object. " & err.Description & ".")
-	WScript.Quit
+Set xmldom = CreateObject("MSXML2.DOMDocument")
+
+Select Case WScript.Arguments.Count
+Case 1
+	If WScript.Arguments.Item(0) = "/?" Then
+		WScript.Echo("Usage: XorCrypt Key FileIn FileOut")
+		WScript.Echo("Note: Key is a byte.")
+		WScript.Quit
+	Else
+		WScript.Echo("Too few arguments.")
+		WScript.Quit 1
+	End If
+Case Else
+	If WScript.Arguments.Count < 3 Then
+		WScript.Echo("Too few arguments.")
+		WScript.Quit 1
+	End if
+End Select
+
+On Error Resume Next
+Key = CByte(WScript.Arguments(0))
+If err.number <> 0 Then
+	WScript.Echo("Invalid key.")
+	WScript.Quit 1
 End If
+On Error Goto 0
+FileIn = WScript.Arguments(1)
+FileOut = WScript.Arguments(2)
 
 Set node = xmldom.CreateElement("binary")
 node.DataType = "bin.hex"
@@ -51,10 +48,6 @@ Next
 adostream.Type = adTypeBinary
 adostream.Open
 adostream.LoadFromFile FileIn
-If err.number <> 0 Then
-	WScript.Echo("Failed to open " & FileIn & " " & err.Description & ".")
-	WScript.Quit
-End If
 Buffer = adostream.Read
 adostream.Close
 adostream.Type = adTypeBinary
@@ -66,13 +59,9 @@ For i = 1 To LenB(Buffer)
 	adostream.Write ByteTable(bByteXored)
 Next
 adostream.SaveToFile FileOut, adSaveCreateOverWrite
-If err.number <> 0 Then
-	WScript.Echo("Failed to open " & FileOut & " " & err.Description & ".")
-	WScript.Quit
-End If
 adostream.Close
 Set xmldom = Nothing
 Set adostream = Nothing
 Set node = Nothing
-Set fso = Nothing
-WScript.Echo(FileIn & " is xored with key " & Key & " and saved as " & FileOut)
+
+WScript.Echo(FileIn & " is xor-ed with key " & Key & " and saved as " & FileOut)

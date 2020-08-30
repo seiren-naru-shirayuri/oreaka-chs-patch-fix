@@ -5,6 +5,6 @@ del opmv.wmv.???
 ren opmv.wmv.merged opmv.wmv
 cd ..
 md patch3
-for %%I in ("patch3_encrypted\*") do XorCrypt 123 "%%~I" "patch3\%%~nxI"
+for %%I in ("patch3_encrypted\*") do cscript //nologo XorCrypt.vbs 123 "%%~I" "patch3\%%~nxI"
 md "V1.3 Patch"
 move patch3\evz01_10.png "V1.3 Patch\patch3.xp3"
